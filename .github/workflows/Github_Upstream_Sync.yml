@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: 使用 GitHub 同步接口更新分支
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.UPSTREAM_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
@@ -38,6 +38,16 @@ jobs:
             "repos/${GITHUB_REPOSITORY}/merge-upstream" \
             -f "branch=${TARGET_BRANCH}" 2>&1); then
             output=${output//$'\n'/' '}
+            if [[ "${output}" == *'without `workflows` permission'* ]]; then
+              echo "::warning title=上游工作流需要手动同步::${output}"
+              {
+                echo '## 上游工作流需要手动同步'
+                echo
+                echo '默认的 GITHUB_TOKEN 不能创建或修改工作流文件。'
+                echo '如需自动同步此类文件，请配置具有 workflow 权限的 UPSTREAM_SYNC_TOKEN 仓库密钥。'
+              } >> "${GITHUB_STEP_SUMMARY}"
+              exit 0
+            fi
             echo "::error title=上游同步失败::${output}"
             exit 1
           fi
