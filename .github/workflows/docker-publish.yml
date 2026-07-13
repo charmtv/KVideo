@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   prepare:
+    if: ${{ github.repository == 'KuekHaoYang/KVideo' }}
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.value }}
