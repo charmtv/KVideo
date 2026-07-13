@@ -33,7 +33,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh api \
+          if ! output=$(gh api \
             --method POST \
             "repos/${GITHUB_REPOSITORY}/merge-upstream" \
-            -f "branch=${TARGET_BRANCH}"
+            -f "branch=${TARGET_BRANCH}" 2>&1); then
+            output=${output//$'\n'/' '}
+            echo "::error title=上游同步失败::${output}"
+            exit 1
+          fi
+          printf '%s\n' "${output}"
