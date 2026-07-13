@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll';
+import type { Tag } from '../SortableTag';
 
 interface DoubanMovie {
     id: string;
@@ -11,7 +12,7 @@ interface DoubanMovie {
 
 const PAGE_LIMIT = 20;
 
-export function usePopularMovies(selectedTag: string, tags: any[], contentType: 'movie' | 'tv' = 'movie') {
+export function usePopularMovies(selectedTag: string, tags: Tag[], contentType: 'movie' | 'tv' = 'movie') {
     const [movies, setMovies] = useState<DoubanMovie[]>([]);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -43,11 +44,13 @@ export function usePopularMovies(selectedTag: string, tags: any[], contentType: 
     }, [loading, tags, contentType]);
 
     useEffect(() => {
+        if (tags.length === 0) return;
+
         setPage(0);
         setMovies([]);
         setHasMore(true);
         loadMovies(selectedTag, 0, false);
-    }, [selectedTag, contentType]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [selectedTag, tags, contentType]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const { prefetchRef, loadMoreRef } = useInfiniteScroll({
         hasMore,
